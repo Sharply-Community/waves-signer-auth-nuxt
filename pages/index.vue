@@ -9,8 +9,8 @@
         Demo project for Waves Signer Authentication
       </h2>
       <div class="links">
-        <a href="#" target="_blank" class="button--green">
-          Login
+        <a @click.prevent="callSigner" href="#" class="button--green">
+          {{ loginButtonText }}
         </a>
       </div>
     </div>
@@ -18,11 +18,50 @@
 </template>
 
 <script>
+// importing packages
+import Waves from '@waves/signer'
+import Provider from '@waves.exchange/provider-web'
+
 import Logo from '~/components/Logo.vue'
+
+// instantiating objects
+const waves = new Waves({ NODE_URL: 'https://pool.testnet.wavesnodes.com' })
+
+const provider = new Provider('https://testnet.waves.exchange/signer/')
+
+// setting provider to signer
+waves.setProvider(provider)
 
 export default {
   components: {
     Logo
+  },
+  data() {
+    return {
+      loginButtonText: 'Login',
+      isAuthenticated: false
+    }
+  },
+  methods: {
+    async callSigner() {
+      if (!this.isAuthenticated) {
+        try {
+          const userData = await waves.login()
+          this.loginButtonText = `Signed in as ${userData.address}`
+          this.isAuthenticated = true
+        } catch (error) {
+          this.loginButtonText = error.message
+        }
+      } else {
+        try {
+          await waves.logout()
+          this.isAuthenticated = false
+          this.loginButtonText = 'Login'
+        } catch (error) {
+          this.loginButtonText = error.message
+        }
+      }
+    }
   }
 }
 </script>
