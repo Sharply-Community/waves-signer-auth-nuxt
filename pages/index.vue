@@ -9,7 +9,12 @@
         Demo project for Waves Signer Authentication
       </h2>
       <div class="links">
-        <a @click.prevent="callSigner" href="#" class="button--green">
+        <a
+          @click.prevent="callSigner"
+          href="#"
+          target="_blank"
+          class="button--green"
+        >
           {{ loginButtonText }}
         </a>
       </div>
@@ -18,18 +23,16 @@
 </template>
 
 <script>
-// importing packages
 import Waves from '@waves/signer'
 import Provider from '@waves.exchange/provider-web'
-
 import Logo from '~/components/Logo.vue'
 
-// instantiating objects
+// settings
 const waves = new Waves({ NODE_URL: 'https://pool.testnet.wavesnodes.com' })
 
+// setting the Waves.Exchange provider
 const provider = new Provider('https://testnet.waves.exchange/signer/')
 
-// setting provider to signer
 waves.setProvider(provider)
 
 export default {
@@ -38,16 +41,20 @@ export default {
   },
   data() {
     return {
-      loginButtonText: 'Login',
+      loginButtonText: 'login',
       isAuthenticated: false
     }
   },
   methods: {
     async callSigner() {
       if (!this.isAuthenticated) {
+        this.loginButtonText = 'logging in...'
+
         try {
           const userData = await waves.login()
+
           this.loginButtonText = `Signed in as ${userData.address}`
+
           this.isAuthenticated = true
         } catch (error) {
           this.loginButtonText = error.message
@@ -55,7 +62,9 @@ export default {
       } else {
         try {
           await waves.logout()
+
           this.isAuthenticated = false
+
           this.loginButtonText = 'Login'
         } catch (error) {
           this.loginButtonText = error.message
